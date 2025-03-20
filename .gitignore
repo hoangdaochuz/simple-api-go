@@ -1,0 +1,35 @@
+# Thư mục biên dịch và tệp nhị phân
+/bin/
+/obj/
+/build/
+*.exe
+*.out
+*.app
+
+.env
+
+*.test
+*.a
+
+# Các file tạm thời
+*.log
+*.tmp
+*.swp
+
+# Các thư mục phụ thuộc của Go Modules
+/vendor/
+
+# Go Modules cache
+go.sum
+go.mod~
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.iml
+.DS_Store
+
+# Debugging & Coverage
+*.prof
+*.cover
+coverage.out
