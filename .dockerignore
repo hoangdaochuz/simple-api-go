@@ -1,0 +1,10 @@
+# Thư mục build và cache
+/build
+/node_modules
+/vendor
+/tmp
+/bin
+
+# File không cần thiết
+*.log
+*.env
