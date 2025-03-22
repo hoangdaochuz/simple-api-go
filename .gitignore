@@ -20,7 +20,6 @@
 /vendor/
 
 # Go Modules cache
-go.sum
 go.mod~
 
 # IDE & Editor files
