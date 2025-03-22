@@ -55,4 +55,4 @@ jobs:
           push: true # Push lên Docker Hub
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/simple-api-go:latest
-            ${{ secrets.DOCKER_USERNAME }}/simple-api-go:${{ github.sha }}  # Tag với commit SHA
+            ${{ secrets.DOCKER_USERNAME }}/simple-api-go:${{ github.sha }}
