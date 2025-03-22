@@ -2,13 +2,11 @@ version: "3.8"
 
 services:
   app:
-    build: .
+    image: hkdarealest/simple-api-go:latest
     container_name: gin_app
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
 
-    volumes:
-      - .:/code
     depends_on:
       db: # Dùng object thay vì array
         condition: service_healthy
