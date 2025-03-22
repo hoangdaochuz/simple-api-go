@@ -1,0 +1,58 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main # Chạy khi push lên main
+  pull_request:
+    branches:
+      - main # Chạy khi có PR vào main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest # Máy ảo chạy workflow
+
+    steps:
+      # 1. Checkout code từ repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Set up Go environment
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.0" # Phiên bản Go trong Dockerfile của mày
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: go mod download
+
+      # 4. Build Go app (kiểm tra lỗi build)
+      - name: Build Go app
+        run: go build -o gin_app
+
+      # 5. (Tùy chọn) Chạy unit test nếu có
+      # - name: Run tests
+      #   run: go test ./... -v
+
+      # 6. Set up Docker Buildx (hỗ trợ build multi-platform nếu cần)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 7. Login vào Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 8. Build và push Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true # Push lên Docker Hub
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/simple-api-go:latest
+            ${{ secrets.DOCKER_USERNAME }}/simple-api-go:${{ github.sha }}  # Tag với commit SHA
