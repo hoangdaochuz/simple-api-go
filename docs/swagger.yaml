@@ -1,5 +1,36 @@
 basePath: /api/v1
 definitions:
+  dtos.AuthLoginInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  dtos.AuthRegisterInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      userName:
+        type: string
+    type: object
+  dtos.UserResponse:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      updatedAt:
+        type: string
+      userName:
+        type: string
+    type: object
   repository.Event:
     properties:
       createdAt:
@@ -15,6 +46,23 @@ definitions:
       startAt:
         type: string
       updatedAt:
+        type: string
+    type: object
+  repository.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      updatedAt:
+        type: string
+      userName:
         type: string
     type: object
 externalDocs:
@@ -34,6 +82,118 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user with email and password, returning access and
+        refresh tokens.
+      parameters:
+      - description: User login details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.AuthLoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tokens generated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid email or password
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login a user
+      tags:
+      - Auth
+  /auth/logout:
+    get:
+      description: Log out the authenticated user by clearing the refresh token cookie.
+      responses:
+        "200":
+          description: Logout successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Log out user
+      tags:
+      - Auth
+  /auth/refresh:
+    get:
+      description: Refresh the access token using a valid refresh token stored in
+        cookies.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: New access token generated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid or expired refresh token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Refresh user access token
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with a unique email and hashed password.
+      parameters:
+      - description: User registration details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.AuthRegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            $ref: '#/definitions/repository.User'
+        "400":
+          description: Invalid input or email already exists
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - Auth
   /events:
     get:
       description: Retrieve a list of all events
@@ -232,6 +392,25 @@ paths:
       summary: Search events
       tags:
       - Events
+  /users/my-profile:
+    get:
+      description: Retrieve the profile information of the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile retrieved successfully
+          schema:
+            $ref: '#/definitions/dtos.UserResponse'
+        "500":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user profile
+      tags:
+      - User
 securityDefinitions:
   BasicAuth:
     type: basic

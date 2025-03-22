@@ -6,6 +6,7 @@ import (
 	"example.com/go-api/docs"
 	"example.com/go-api/internal/config"
 	"example.com/go-api/internal/database"
+	"example.com/go-api/internal/middlewares"
 	"example.com/go-api/internal/repository"
 	"example.com/go-api/internal/transport"
 	"github.com/gin-gonic/gin"
@@ -42,7 +43,8 @@ func main() {
 	database.Connect(config)
 
 	// Migrate the schema
-	database.DB.AutoMigrate(&repository.Event{})
+	database.DB.AutoMigrate(&repository.Event{},&repository.User{})
+
 
 	server := gin.Default()
 	docs.SwaggerInfo.Title = "Swagger Learn GO API"
@@ -54,12 +56,22 @@ func main() {
 	docs.SwaggerInfo.BasePath = "/"
 	
 
+	// EVENT ROUTES
 	server.GET("/events", transport.GetAllEventsHandler)
 	server.GET("/events/:id",transport.GetEventById)
 	server.POST("/events",transport.CreateEventHandler)
 	server.PUT("events/:id",transport.UpdateEventHandler)
 	server.DELETE("events/:id",transport.DeleteEventHandler)
 	server.GET("/events/search", transport.SearchEventsHandler)
+
+	// AUTH ROUTES
+	server.POST("auth/register", transport.UserRegisterHandler)
+	server.POST("auth/login", transport.UserLoginHandler)
+	server.GET("auth/refresh", transport.UserRefreshTokenHandler)
+	server.GET("auth/logout", transport.UserLogoutHandler)
+
+	// USER ROUTES
+	server.GET("users/my-profile",middlewares.CheckAuth ,transport.GetUserMyProfileHandler)
 
 
 	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
