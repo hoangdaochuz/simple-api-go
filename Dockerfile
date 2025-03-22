@@ -13,7 +13,6 @@ WORKDIR /root
 RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/gin_app .
 
-COPY .env .env
 
 EXPOSE 8080
 CMD ["./gin_app"]
