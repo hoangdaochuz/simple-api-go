@@ -43,7 +43,7 @@ func main() {
 	database.Connect(config)
 
 	// Migrate the schema
-	database.DB.AutoMigrate(&repository.Event{},&repository.User{})
+	database.DB.AutoMigrate(&repository.Event{},&repository.User{}, &repository.Product{})
 
 
 	server := gin.Default()
@@ -63,6 +63,14 @@ func main() {
 	server.PUT("events/:id",transport.UpdateEventHandler)
 	server.DELETE("events/:id",transport.DeleteEventHandler)
 	server.GET("/events/search", transport.SearchEventsHandler)
+
+	// PRODUCTS ROUTES
+	server.GET("/products", transport.GetAllProductsHandler)
+	server.GET("/products/:id",transport.GetProductById)
+	server.POST("/products",transport.CreateProductHandler)
+	server.PUT("products/:id",transport.UpdateProductHandler)
+	server.DELETE("products/:id",transport.DeleteProductHandler)
+	server.GET("/products/recently", transport.GetRecentlyProductsHandler)
 
 	// AUTH ROUTES
 	server.POST("auth/register", transport.UserRegisterHandler)
