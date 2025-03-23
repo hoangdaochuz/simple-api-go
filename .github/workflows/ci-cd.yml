@@ -57,3 +57,79 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/simple-api-go:latest
             ${{ secrets.DOCKER_USERNAME }}/simple-api-go:${{ github.sha }}
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            mkdir -p ~/simple-api-go
+            cd ~/simple-api-go
+
+
+            echo "${{ secrets.ENV_FILE }}" > .env
+
+            # Ghi docker-compose.yml
+            cat << 'EOF' > docker-compose.yml
+            version: "3.8"
+            services:
+              app:
+                image: ${{ secrets.DOCKER_USERNAME }}/simple-api-go:latest
+                container_name: gin_app
+                ports:
+                  - "8080:8080"
+                depends_on:
+                  db:
+                    condition: service_healthy
+                  redis:
+                    condition: service_started
+                env_file:
+                  - .env
+                networks:
+                  - backend
+              db:
+                image: postgres:15
+                container_name: go_gin_pgdb
+                restart: always
+                env_file:
+                  - .env 
+                environment:
+                  - POSTGRES_USER=${DB_USER}
+                  - POSTGRES_PASSWORD=${DB_PASS}
+                  - POSTGRES_DB=${DB_NAME}
+                healthcheck:
+                  test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+                  interval: 5s
+                  timeout: 5s
+                  retries: 5
+                volumes:
+                  - postgres_data:/var/lib/postgresql/data
+                networks:
+                  - backend
+              redis:
+                image: redis:latest
+                container_name: go_gin_redis
+                restart: always
+                networks:
+                  - backend
+            networks:
+              backend:
+                driver: bridge
+            volumes:
+              postgres_data:
+            EOF
+
+
+            docker-compose pull
+            docker-compose up -d --remove-orphans
